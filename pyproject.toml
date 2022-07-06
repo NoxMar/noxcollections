@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "noxcollections"
+version = "0.1.0.dev1"
+description = "Pure python implementation of simple data structures and some basic algorithms focused on readability."
+authors = ["Marcin Śladewski <mar4sladewski@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+flake8 = "^4.0.1"
+mypy = "^0.961"
+tox = "^3.25.1"
+tox-poetry = "^0.4.1"
+pytest = "^7.1.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
