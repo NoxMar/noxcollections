@@ -9,7 +9,7 @@ ABC in a way that is intended to be equivalent to the built-in ``list`` type.
 from dataclasses import dataclass
 from itertools import islice
 
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import (
     Any,
     Optional,
@@ -54,7 +54,7 @@ class _LinkedListNode(Generic[T]):
     next: Optional["_LinkedListNode"] = None
 
 
-class _ListABC(MutableSequence[T], Generic[T]):
+class _ListABC(MutableSequence[T], Generic[T], ABC):
     def __init__(self, values: Optional[Iterable] = None):
         self._head: Optional[_LinkedListNode[T]] = None
         if values is None:
@@ -72,7 +72,7 @@ class _ListABC(MutableSequence[T], Generic[T]):
         pass
 
     @abstractmethod
-    def _get_by_slice(self, slice_: slice) -> T:
+    def _get_by_slice(self, slice_: slice) -> MutableSequence[T]:
         pass
 
     @overload
@@ -134,24 +134,15 @@ class _ListABC(MutableSequence[T], Generic[T]):
             self._del_by_index(key)
 
 
-class _LinkedListAbstractBase(_ListABC, Generic[T]):
+class _LinkedListAbstractBase(_ListABC, Generic[T], ABC):
     def _get_by_index(self, index: int) -> T:
         return _nth(_normalize_index(index, self), iter(self))
-
-    def _get_by_slice(self, slice_: slice) -> T:
-        raise NotImplementedError()
 
     def _set_by_index(self, index: int, value: T) -> None:
         nth_node: _LinkedListNode[T] = _nth(
             _normalize_index(index, self), self._iter_nodes()
         )
         nth_node.value = value
-
-    def _set_by_slice(self, slice_: slice, values: Iterable[T]) -> None:
-        raise NotImplementedError()
-
-    def _del_by_slice(self, slice_: slice) -> None:
-        raise NotImplementedError()
 
     def _is_empty(self):
         return self._head is None
@@ -195,7 +186,7 @@ class LinkedList(_LinkedListAbstractBase, Generic[T]):
     def _del_by_slice(self, slice_: slice) -> None:
         raise NotImplementedError("Planned in the next dev release")
 
-    def _get_by_slice(self, slice_: slice) -> T:
+    def _get_by_slice(self, slice_: slice) -> MutableSequence[T]:
         raise NotImplementedError("Planned in the next dev release")
 
     def _delete_first(self):
