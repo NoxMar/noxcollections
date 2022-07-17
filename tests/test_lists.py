@@ -156,6 +156,30 @@ class _TestIndexOperationConsistentWithListAndThrows(
     pass
 
 
+def _parameters_for_slice_tests() -> Iterable[
+    Tuple[Iterable[int], slice, Iterable[int]]
+]:
+    return [
+        (range(10), slice(3), range(100, 103)),
+        (range(10), slice(3, None), range(100, 107)),
+        (range(10), slice(None, None, 2), range(100, 105)),
+        (range(10), slice(None, None), range(100, 110)),
+        (range(10), slice(3, 3), []),
+        (range(10), slice(3, 4), [100]),
+        (range(10), slice(2, 9, 3), range(100, 103)),
+        (range(10), slice(-3), range(100, 107)),
+        (range(10), slice(-9, -3), range(100, 106)),
+        (range(10), slice(-3, -9), []),
+        (range(10), slice(-8, -3, 2), range(100, 103)),
+        (range(10), slice(-100, -3, 2), range(100, 104)),
+        (range(10), slice(-100, 5, 3), range(100, 102)),
+        (range(10), slice(3, -4, 2), range(100, 102)),
+        (range(10), slice(None, None, -3), range(100, 104)),
+        (range(10), slice(9, -1, -3), []),
+        (range(10), slice(-5, None, -2), range(100, 103)),
+    ]
+
+
 class _TestSliceOperationConsistentWithList(TestMutableSequence, ABC):
     @abstractmethod
     def _tested_operation(
@@ -163,20 +187,13 @@ class _TestSliceOperationConsistentWithList(TestMutableSequence, ABC):
         seq: MutableSequence[T],
         slice_: slice,
         values: Iterable[T],
-    ) -> Optional[Iterable[T]]:
+    ) -> Optional[MutableSequence[T]]:
         pass
 
     @pytest.mark.parametrize(
-        ("iterable", "slice_", "values"),
-        [
-            (
-                range(10),
-                slice(None, 3, None),
-                range(100, 103),
-            )
-        ],
+        ("iterable", "slice_", "values"), _parameters_for_slice_tests()
     )
-    def test_operation_is_consistent_with_builtin_list(
+    def test_state_is_consistent_with_builtin_list(
         self,
         list_type: ListConstructor,
         iterable: Iterable[T],
@@ -191,6 +208,28 @@ class _TestSliceOperationConsistentWithList(TestMutableSequence, ABC):
 
         assert are_sequences_equal(builtin_list, list_)
 
+    @pytest.mark.parametrize(
+        ("iterable", "slice_", "values"), _parameters_for_slice_tests()
+    )
+    def test_operation_result_is_consistent_with_builtin_list(
+        self,
+        list_type: ListConstructor,
+        iterable: Iterable[T],
+        slice_: slice,
+        values: Iterable[T],
+    ) -> None:
+        builtin_list = list(iterable)
+        list_ = list_type(iterable)
+
+        reference_result = self._tested_operation(builtin_list, slice_, values)
+        tested_result = self._tested_operation(list_, slice_, values)
+
+        if reference_result is None or tested_result is None:
+            assert reference_result is None and tested_result is None
+            return
+
+        assert are_sequences_equal(reference_result, tested_result)
+
 
 class TestGetItemForIndexConsistentWithList(
     _TestIndexOperationConsistentWithListAndThrows
@@ -202,6 +241,17 @@ class TestGetItemForIndexConsistentWithList(
         value: T,
     ) -> Optional[T]:
         return seq[index]
+
+
+@pytest.mark.xfail(reason="Not implemented yet")
+class TestGetItemForSliceConsistentWithList(_TestSliceOperationConsistentWithList):
+    def _tested_operation(
+        self,
+        seq: MutableSequence[T],
+        slice_: slice,
+        values: Iterable[T],
+    ) -> Optional[MutableSequence[T]]:
+        return seq[slice_]
 
 
 class TestSetItemForIndexConsistentWithList(
@@ -224,7 +274,7 @@ class TestSetItemForSliceConsistentWithList(_TestSliceOperationConsistentWithLis
         seq: MutableSequence[T],
         slice_: slice,
         values: Iterable[T],
-    ) -> Optional[Iterable[T]]:
+    ) -> Optional[MutableSequence[T]]:
         seq[slice_] = values
         return None
 
