@@ -18,7 +18,7 @@ Additionally I hope to refresh and better structure my knowledge about the
 implemented data structures and algorithms.
 
 For the reasons stated above this project is mainly meant for educational
-purposes. **If you need performance bulitin package** ``collections`` **as well
+purposes. **If you need performance built-in package** ``collections`` **as well
 as some other packages from PyPI will probably serve you better** (due to better
 optimization as well as the fact that most of them are implemented as C
 extensions).
@@ -108,7 +108,7 @@ To run all of the aforementioned tools using tox (after installing all of the
 dependencies and package using ``poetry install``)::
     poetry run tox
 
-To run those tools more granularly check the ``tox.ini`` file to check the names
+To run those tools more selectively check the ``tox.ini`` file to check the names
 of the environments you wish to run.
 
 .. _pytest: https://pytest.org/

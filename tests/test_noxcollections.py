@@ -1,3 +1,5 @@
+"""Package level tests."""
+
 from noxcollections import __version__
 
 
