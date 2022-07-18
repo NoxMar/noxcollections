@@ -48,6 +48,16 @@ def _normalize_index(index: int, len_source: Union[int, Sized]) -> int:
     return translated_index
 
 
+def _normalize_and_clip_index(index: int, len_source: Union[int, Sized]) -> int:
+    """Returns index closest to a given index in the sequence of specified length.
+
+    Negative indexing is supported. For indexes greater than the last proper index
+    length of the sequence will be returned. If negative indexing would traverse beyond
+    the index 0, 0 is returned."""
+    length = len_source if isinstance(len_source, int) else len(len_source)
+    return slice(index, index + 1).indices(length)[0]
+
+
 def _normalize_slice(slice_: slice, len_source: Union[int, Sized]) -> slice:
     length = len_source if isinstance(len_source, int) else len(len_source)
     return slice(*slice_.indices(length))
@@ -201,18 +211,6 @@ class LinkedList(_LinkedListAbstractBase, Generic[T]):
     In the current development version there are **some missing features**:
 
     - Deletion (i.e. ``del s[...]``) **doesn't support slicing**.
-    - `insert()` **raises** ``IndexError`` **for indexes outside the index range**
-    of the instance. For examples following calls currently raise `IndexError` instead
-    of working in the way consistent with built-in ``list``: ::
-
-        list_ = LinkedList(range(3))
-        # All the lines below are examples of calls to `insert()` which raise
-        # while they shouldn't (normally they are equivalent to `list_.append(100)`)
-        list_.insert(4, 100)
-        list_.insert(100, 100)
-
-    - Negative indexes for ``insert()`` cause insertion at before the first element of
-    the list.
     """
 
     def _del_by_slice(self, slice_: slice) -> None:
@@ -238,21 +236,13 @@ class LinkedList(_LinkedListAbstractBase, Generic[T]):
             yield current
             current = current.next
 
-    def insert(self, index: int, obj: Any):
-        """Inserts ``obj`` into the list at the ``index`` (same as ``s[i:i] = [x]``).
-
-        Current implementation contains the **following bugs** which are intended to be
-        fixed in the before the next beta release:
-
-        - **Negative** `index` causes insertion at the beginning of the list.
-        - ``IndexError`` is raised **for indexes out of range** of the list after
-        insertion.
-        """
-        if index == 0:
+    def insert(self, index_after_inserted: int, obj: Any):
+        index_after_inserted = _normalize_and_clip_index(index_after_inserted, self)
+        if index_after_inserted == 0:
             self._insert_first(obj)
             return
 
-        before_inserted = _nth(index - 1, self._iter_nodes())
+        before_inserted = _nth(index_after_inserted - 1, self._iter_nodes())
         to_insert = _LinkedListNode(value=obj, next=before_inserted.next)
         before_inserted.next = to_insert
 

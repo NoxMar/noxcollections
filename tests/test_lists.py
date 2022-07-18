@@ -301,7 +301,6 @@ class TestDelItemForSliceConsistentWithList(_TestSliceOperationConsistentWithLis
         del seq[slice_]
 
 
-@pytest.mark.xfail(reason="Bug for indexes out of range")
 class TestInsertConsistentWithList(_TestIndexOperationConsistentWithList):
     def _tested_operation(
         self,
