@@ -48,6 +48,27 @@ def _normalize_index(index: int, len_source: Union[int, Sized]) -> int:
     return translated_index
 
 
+def _normalize_slice(slice_: slice, len_source: Union[int, Sized]) -> slice:
+    length = len_source if isinstance(len_source, int) else len(len_source)
+    return slice(*slice_.indices(length))
+
+
+def _indexes_for_slice(slice_: slice, len_source: Union[int, Sized]) -> Iterable[int]:
+    """Returns indexes of all elements that would be returned for a given slice.
+
+    Args:
+        slice_ (slice): Slice that would be passed to sequence ``s`` of a given length
+          in a following manner: ``s[slice_]``
+        len_source (Union[int, Sized]): Length of an addressed sequence of a sized
+          object to be the source of the same.
+
+    Returns:
+        Iterable[int]: All of the indexes for a ``slice_`` in a correct order.
+    """
+    length = len_source if isinstance(len_source, int) else len(len_source)
+    return range(length)[slice_]
+
+
 @dataclass
 class _LinkedListNode(Generic[T]):
     value: T
@@ -138,11 +159,19 @@ class _LinkedListAbstractBase(_ListABC, Generic[T], ABC):
     def _get_by_index(self, index: int) -> T:
         return _nth(_normalize_index(index, self), iter(self))
 
+    def _get_by_slice(self, slice_: slice) -> MutableSequence[T]:
+        return self.__class__(e.value for e in self._iter_nodes_by_slice(slice_))
+
     def _set_by_index(self, index: int, value: T) -> None:
         nth_node: _LinkedListNode[T] = _nth(
             _normalize_index(index, self), self._iter_nodes()
         )
         nth_node.value = value
+
+    def _set_by_slice(self, slice_: slice, values: Iterable[T]) -> None:
+        values_iter = iter(values)
+        for node in self._iter_nodes_by_slice(slice_):
+            node.value = next(values_iter)
 
     def _is_empty(self):
         return self._head is None
@@ -153,6 +182,11 @@ class _LinkedListAbstractBase(_ListABC, Generic[T], ABC):
     @abstractmethod
     def _iter_nodes(self) -> Iterator[_LinkedListNode[T]]:
         pass
+
+    # TODO: Improve efficiency by not iterating from the start each time. This affects
+    # performance of ``_get_by_slice`` and ``_set_by_slice``.
+    def _iter_nodes_by_slice(self, slice_: slice) -> Iterator[_LinkedListNode[T]]:
+        return (_nth(i, self._iter_nodes()) for i in _indexes_for_slice(slice_, self))
 
     def __iter__(self) -> Iterator[T]:
         return (e.value for e in self._iter_nodes())
@@ -166,7 +200,7 @@ class LinkedList(_LinkedListAbstractBase, Generic[T]):
 
     In the current development version there are **some missing features**:
 
-    - All operation using subscription operator (i.e. ``[]``) **don't support slicing**.
+    - Deletion (i.e. ``del s[...]``) **doesn't support slicing**.
     - `insert()` **raises** ``IndexError`` **for indexes outside the index range**
     of the instance. For examples following calls currently raise `IndexError` instead
     of working in the way consistent with built-in ``list``: ::
@@ -176,17 +210,12 @@ class LinkedList(_LinkedListAbstractBase, Generic[T]):
         # while they shouldn't (normally they are equivalent to `list_.append(100)`)
         list_.insert(4, 100)
         list_.insert(100, 100)
+
     - Negative indexes for ``insert()`` cause insertion at before the first element of
     the list.
     """
 
-    def _set_by_slice(self, slice_: slice, values: Iterable[T]) -> None:
-        raise NotImplementedError("Planned in the next dev release")
-
     def _del_by_slice(self, slice_: slice) -> None:
-        raise NotImplementedError("Planned in the next dev release")
-
-    def _get_by_slice(self, slice_: slice) -> MutableSequence[T]:
         raise NotImplementedError("Planned in the next dev release")
 
     def _delete_first(self):

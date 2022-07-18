@@ -243,7 +243,6 @@ class TestGetItemForIndexConsistentWithList(
         return seq[index]
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 class TestGetItemForSliceConsistentWithList(_TestSliceOperationConsistentWithList):
     def _tested_operation(
         self,
@@ -267,7 +266,6 @@ class TestSetItemForIndexConsistentWithList(
         return None
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
 class TestSetItemForSliceConsistentWithList(_TestSliceOperationConsistentWithList):
     def _tested_operation(
         self,
