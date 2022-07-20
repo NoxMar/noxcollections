@@ -1,4 +1,4 @@
-from typing import Iterable, TypeVar, Sequence, Generator
+from typing import TypeVar, Sequence, Generator
 
 import pytest
 
@@ -21,7 +21,7 @@ def exhaust_stack_using_pop(stack: StackABC[T]) -> Generator[T, None, None]:
 
 
 @pytest.fixture
-@pytest.mark.parametrize("sequence_factory", sequence_types)
+@pytest.mark.parametrize("sequence_factory", sequence_types())
 def empty_stack(sequence_factory) -> Stack:
     return Stack(sequence_factory=sequence_factory)
 
@@ -43,14 +43,14 @@ def test_empty_stack_has_len_0(empty_stack: StackABC):
     assert len(stack) == 0
 
 
-@pytest.mark.parametrize("iterable", all_sequences())
+@pytest.mark.parametrize("seq", all_sequences())
 @pytest.mark.parametrize("sequence_factory", sequence_types())
 def test_length_of_the_stack_consistent_with_passed_iterable(
-    sequence_factory, iterable: Iterable[int]
+    sequence_factory, seq: Sequence[int]
 ):
-    stack = Stack(iterable, sequence_factory)
+    stack = Stack(seq, sequence_factory)
 
-    assert len(stack) == len(iterable)
+    assert len(stack) == len(seq)
 
 
 def test_top_from_empty_stack_raises(empty_stack: StackABC) -> None:

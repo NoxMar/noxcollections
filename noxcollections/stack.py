@@ -3,7 +3,17 @@ on a MutableSequence implementation passed by the caller."""
 
 from abc import ABC, abstractmethod
 
-from typing import Optional, Iterable, TypeVar, Generic, Sized, Union, Any
+from typing import (
+    Optional,
+    Iterable,
+    TypeVar,
+    Generic,
+    Sized,
+    Union,
+    Any,
+    Callable,
+    MutableSequence,
+)
 
 T = TypeVar("T")
 S = TypeVar("S", Any, None)
@@ -76,7 +86,7 @@ class StackABC(Generic[T], Sized, ABC):
         """
 
     @abstractmethod
-    def pop(self) -> None:
+    def pop(self) -> T:
         """Returns and **removes**  the top-most element form the stack.
 
         Raises:
@@ -86,10 +96,12 @@ class StackABC(Generic[T], Sized, ABC):
 
 class Stack(StackABC):
     def __init__(
-        self, iterable: Optional[Iterable[T]] = None, sequence_factory=list
+        self,
+        iterable: Optional[Iterable[T]] = None,
+        sequence_factory: Callable[[], MutableSequence] = list,
     ) -> None:
         self._backing_sequence = (
             sequence_factory(iterable) if iterable is not None else sequence_factory()
         )
 
-        super().__init__(iterable, sequence_factory)
+        super().__init__(iterable)
