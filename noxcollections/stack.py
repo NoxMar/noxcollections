@@ -13,7 +13,7 @@ class StackABC(Generic[T], Sized, ABC):
     """ABC for stack ADT."""
 
     @abstractmethod
-    def __init__(self, iterable: Optional[Iterable[T]]) -> None:
+    def __init__(self, iterable: Optional[Iterable[T]] = None) -> None:
         """ABC for stack ADT. If ``iterable`` is passed elements are added to the stack.
 
         Passing ``iterable`` is equivalent to adding all of the elements from it in
@@ -86,3 +86,14 @@ class StackABC(Generic[T], Sized, ABC):
         Raises:
             IndexError: if the stack is empty.
         """
+
+
+class Stack(StackABC):
+    def __init__(
+        self, iterable: Optional[Iterable[T]] = None, sequence_factory=list
+    ) -> None:
+        self._backing_sequence = (
+            sequence_factory(iterable) if iterable is not None else sequence_factory()
+        )
+
+        super().__init__(iterable, sequence_factory)
