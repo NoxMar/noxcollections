@@ -206,7 +206,7 @@ class _TestSliceOperationConsistentWithList(TestMutableSequence, ABC):
         self._tested_operation(builtin_list, slice_, values)
         self._tested_operation(list_, slice_, values)
 
-        assert are_sequences_equal(builtin_list, list_)
+        assert builtin_list == list(list_)
 
     @pytest.mark.parametrize(
         ("iterable", "slice_", "values"), _parameters_for_slice_tests()
@@ -290,7 +290,7 @@ class TestDelItemForIndexConsistentWithList(
         return None
 
 
-@pytest.mark.xfail(reason="Not implemented yet")
+# @pytest.mark.xfail(reason="Not implemented yet")
 class TestDelItemForSliceConsistentWithList(_TestSliceOperationConsistentWithList):
     def _tested_operation(
         self,

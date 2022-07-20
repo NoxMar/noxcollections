@@ -7,7 +7,7 @@ ABC in a way that is intended to be equivalent to the built-in ``list`` type.
 """
 
 from dataclasses import dataclass
-from itertools import islice
+from itertools import islice, count, repeat
 
 from abc import abstractmethod, ABC
 from typing import (
@@ -58,11 +58,6 @@ def _normalize_and_clip_index(index: int, len_source: Union[int, Sized]) -> int:
     return slice(index, index + 1).indices(length)[0]
 
 
-def _normalize_slice(slice_: slice, len_source: Union[int, Sized]) -> slice:
-    length = len_source if isinstance(len_source, int) else len(len_source)
-    return slice(*slice_.indices(length))
-
-
 def _indexes_for_slice(slice_: slice, len_source: Union[int, Sized]) -> Iterable[int]:
     """Returns indexes of all elements that would be returned for a given slice.
 
@@ -77,6 +72,33 @@ def _indexes_for_slice(slice_: slice, len_source: Union[int, Sized]) -> Iterable
     """
     length = len_source if isinstance(len_source, int) else len(len_source)
     return range(length)[slice_]
+
+
+def _indexes_for_slice_deletion(
+    slice_: slice, len_source: Union[int, Sized]
+) -> Iterable[int]:
+    """Returns indexes of all elements to delete while removing a given slice.
+
+    Given index is correct in the sequence modified **by removing all of the prior
+    indexes**.
+
+    Args:
+        slice_ (slice): Slice that would be passed to sequence ``s`` of a given length
+          in a following manner: ``del s[slice_]``
+        len_source (Union[int, Sized]): Length of an addressed sequence of a sized
+          object to be the source of the same.
+
+    Returns:
+        Iterable[int]: All of the indexes of elements to remove from ``s`` successively.
+    """
+    length = len_source if isinstance(len_source, int) else len(len_source)
+
+    offset_source = count() if slice_.step is None or slice_.step > 0 else repeat(0)
+
+    return (
+        base_index - offset
+        for base_index, offset in zip(range(length)[slice_], offset_source)
+    )
 
 
 @dataclass
@@ -183,6 +205,10 @@ class _LinkedListAbstractBase(_ListABC, Generic[T], ABC):
         for node in self._iter_nodes_by_slice(slice_):
             node.value = next(values_iter)
 
+    def _del_by_slice(self, slice_: slice) -> None:
+        for i in _indexes_for_slice_deletion(slice_, self):
+            del self[i]
+
     def _is_empty(self):
         return self._head is None
 
@@ -208,13 +234,9 @@ class _LinkedListAbstractBase(_ListABC, Generic[T], ABC):
 class LinkedList(_LinkedListAbstractBase, Generic[T]):
     """Equivalent of a built-in ``list`` implemented using **linked list**.
 
-    In the current development version there are **some missing features**:
-
-    - Deletion (i.e. ``del s[...]``) **doesn't support slicing**.
+    All of the public methods are intended to work in the same way as ``list``. Current
+    implementations of slice-based operations aren't time-efficient.
     """
-
-    def _del_by_slice(self, slice_: slice) -> None:
-        raise NotImplementedError("Planned in the next dev release")
 
     def _delete_first(self):
         if self._head is not None:
