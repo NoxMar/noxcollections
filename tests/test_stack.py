@@ -6,10 +6,6 @@ from noxcollections.stack import Stack, StackABC
 
 T = TypeVar("T")
 
-pytestmark = pytest.mark.xfail(
-    reason="Not implemented yet. Test written before implementation"
-)
-
 
 def sequence_types():
     yield list
@@ -20,10 +16,10 @@ def exhaust_stack_using_pop(stack: StackABC[T]) -> Generator[T, None, None]:
         yield stack.pop()
 
 
-@pytest.fixture
 @pytest.mark.parametrize("sequence_factory", sequence_types())
-def empty_stack(sequence_factory) -> Stack:
-    return Stack(sequence_factory=sequence_factory)
+@pytest.fixture(params=sequence_types())
+def empty_stack(request) -> Stack:
+    return Stack(sequence_factory=request.param)
 
 
 def two_plus_element_sequences() -> Generator[Sequence[int], None, None]:

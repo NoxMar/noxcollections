@@ -3,6 +3,8 @@ on a MutableSequence implementation passed by the caller."""
 
 from abc import ABC, abstractmethod
 
+from noxcollections.lists import LinkedList
+
 from typing import (
     Optional,
     Iterable,
@@ -94,14 +96,55 @@ class StackABC(Generic[T], Sized, ABC):
         """
 
 
-class Stack(StackABC):
+class Stack(StackABC, Generic[T]):
+    """A stack implementation based on MutableSequence factory passed as a parameter.
+
+    To achieve O(1) time complexity on all operations used MutableSequence
+    implementation should ideally have the following operations of time complexity O(1):
+    1. Insertion at the first index (``s.insert(0, elem)``)
+    2. Deletion at the first index (``del s[0]``)
+    3. Length calculation (``len(s)``)
+
+    By default ``noxcollections.lists.LinkedList`` is used as the backing
+    ``MutableSequence``. Using ``list`` is not recommended as inserting and deleting
+    at the start of the ``lists`` have the time complexity of ``O(n)``.
+    """
+
     def __init__(
         self,
         iterable: Optional[Iterable[T]] = None,
-        sequence_factory: Callable[[], MutableSequence] = list,
+        sequence_factory: Callable[[], MutableSequence] = LinkedList,
     ) -> None:
-        self._backing_sequence = (
-            sequence_factory(iterable) if iterable is not None else sequence_factory()
-        )
+        """Creates a stack based on a ``MutableSequence`` implementing object.
 
+        If time complexity of operations is important refer to class'es documentation
+        for conditions to achieve O(1) time complexity for all operations while choosing
+        the type of the sequence returned by the ``sequence_factory``.
+
+        Args:
+            iterable (Optional[Iterable[T]], optional): If passed all elements from the
+                ``iterable`` are pushed onto the stack after its creation.
+            sequence_factory (Callable[[], MutableSequence], optional): Callable
+                returning object implementing the MutableSequence protocol. Defaults to
+                ``noxcollections.lists.LinkedList``.
+        """
+        self._backing_sequence = sequence_factory()
         super().__init__(iterable)
+
+    def __len__(self) -> int:
+        return len(self._backing_sequence)
+
+    def top(self) -> T:
+        try:
+            return self._backing_sequence[0]
+        except IndexError:
+            raise IndexError("Stack is empty")
+
+    def push(self, element: T) -> None:
+        self._backing_sequence.insert(0, element)
+
+    def pop(self) -> T:
+        try:
+            return self._backing_sequence.pop(0)
+        except IndexError:
+            raise IndexError("Stack is empty")
