@@ -30,10 +30,6 @@ class StackABC(Generic[T], Sized, ABC):
             self.push(e)
 
     @abstractmethod
-    def empty(self) -> bool:
-        """Returns ``True`` if the stack is empty and ``False`` otherwise."""
-
-    @abstractmethod
     def __len__(self) -> int:
         """Returns number of the elements on the stack."""
 
