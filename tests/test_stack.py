@@ -1,14 +1,18 @@
+"""Tests for module ``noxcollections.stack``"""
+
 from typing import TypeVar, Sequence, Generator
 
 import pytest
 
 from noxcollections.stack import Stack, StackABC
+from noxcollections.lists import LinkedList
 
 T = TypeVar("T")
 
 
 def sequence_types():
     yield list
+    yield LinkedList
 
 
 def exhaust_stack_using_pop(stack: StackABC[T]) -> Generator[T, None, None]:
