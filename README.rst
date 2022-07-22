@@ -74,17 +74,16 @@ installed.
 Installation
 ------------
 
-Once the first release (0.1.0) will be completed the package will be published
-to PyPI. **However for now package can be build through Poetry** in a following 
-way:
-
-Install in any environment using pip
+Install using pip
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can install last release version of this package from PyPI_ using ``pip``.
 
 .. code-block:: bash
 
-    poetry build  # build, from main repository directory
-    pip install dist/noxcollections-*.whl  # install using pip
+    pip install noxcollections
+
+.. _PyPi: https://pypi.org/project/noxcollections/
 
 Using Poetry
 ------------
