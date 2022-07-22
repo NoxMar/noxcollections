@@ -54,8 +54,8 @@ Data structures
 Algorithms
 ----------
 
-- [ ] Search Algorithms
-    - [ ] Binary search
+- [x] Search Algorithms
+    - [x] Binary search
 - [ ] Sorting Algorithms
     - [ ] Bubble sort
     - [ ] Merge sort 
