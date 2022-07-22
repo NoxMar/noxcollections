@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "noxcollections"
-version = "0.1.0"
+version = "0.2.0.dev1"
 description = "Pure python implementation of simple data structures and some basic algorithms focused on readability."
 license = "MIT"
 
