@@ -128,6 +128,8 @@ class Stack(StackABC, Generic[T]):
                 returning object implementing the MutableSequence protocol. Defaults to
                 ``noxcollections.lists.LinkedList``.
         """
+        self._sequence_factory = sequence_factory
+
         self._backing_sequence = sequence_factory()
         super().__init__(iterable)
 
@@ -148,3 +150,8 @@ class Stack(StackABC, Generic[T]):
             return self._backing_sequence.pop(0)
         except IndexError:
             raise IndexError("Stack is empty")
+
+    def __repr__(self) -> str:
+        sequence_repr = repr(list(self._backing_sequence)[::-1])
+        callable_name = self._sequence_factory.__name__
+        return f"{self.__class__.__name__}({sequence_repr}, {callable_name})"
