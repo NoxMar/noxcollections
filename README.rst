@@ -43,6 +43,10 @@ Data structures
 ---------------
 
 - [ ] Linked lists and other data structures that can be based on them
+    - [x] Linked list
+    - [ ] Doubly linked list
+    - [x] Stack
+    - [ ] Queues
 - [ ] Other list types
 - [ ] Tree based structures
 - [ ] Graphs based structures
@@ -50,7 +54,13 @@ Data structures
 Algorithms
 ----------
 
-TBD
+- [ ] Search Algorithms
+    - [ ] Binary search
+- [ ] Sorting Algorithms
+    - [ ] Bubble sort
+    - [ ] Merge sort 
+    - [ ] Quick sort
+- [ ] Graph algorithms (TBD)
 
 How to use
 ==========
@@ -106,6 +116,7 @@ checking (using mypy_)
 
 To run all of the aforementioned tools using tox (after installing all of the 
 dependencies and package using ``poetry install``)::
+
     poetry run tox
 
 To run those tools more selectively check the ``tox.ini`` file to check the names

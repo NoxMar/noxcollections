@@ -1,8 +1,16 @@
 [tool.poetry]
 name = "noxcollections"
-version = "0.1.0.dev3"
+version = "0.1.0"
 description = "Pure python implementation of simple data structures and some basic algorithms focused on readability."
+license = "MIT"
+
 authors = ["Marcin Śladewski <mar4sladewski@gmail.com>"]
+
+readme = "README.rst"
+
+repository = "https://github.com/NoxMar/noxcollections"
+
+keywords = ['data-structure', 'collection', 'algorithm']
 
 [tool.poetry.dependencies]
 python = "^3.8"
