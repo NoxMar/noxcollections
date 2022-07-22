@@ -5,8 +5,6 @@ from noxcollections.search import binary_search
 
 import pytest
 
-pytestmark = pytest.mark.xfail(reason="Not implemented yet")
-
 
 def test_binary_search_should_return_minus_1_for_an_empty_sequence():
     assert binary_search([], 1) == -1

@@ -41,4 +41,19 @@ def binary_search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
         int: Index of the first occurrence of the ``value`` or ``-1`` if no instances
             are found.
     """
-    raise NotImplementedError()
+    left = 0
+    right = len(seq) - 1
+
+    while left <= right:
+        middle = (left + right) // 2
+        middle_value = key(seq[middle])
+
+        if middle_value == value:
+            return middle
+
+        if middle_value < value:
+            left = middle + 1
+        else:
+            right = middle - 1
+
+    return -1
