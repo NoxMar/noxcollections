@@ -29,7 +29,8 @@ def binary_search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
     Sequence needs to be sorted in ascending order (with possible repeats). If no
     instances of ``value`` are found ``-1`` is returned. Callable ``key`` can be
     optionally provided to map elements of sequence. If ``key`` is provided
-    the sequence **must be ordered by the results of applying key to them**(``key(e)``).
+    the sequence **must be ordered by the results of applying key to them**
+    (``key(e)``).
 
     Args:
         seq (Sequence[T]): Sequence of elements sorted in **increasing order**.
@@ -55,5 +56,41 @@ def binary_search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
             left = middle + 1
         else:
             right = middle - 1
+
+    return -1
+
+
+@overload
+def search(seq: Sequence[T], value: T) -> int:
+    ...
+
+
+@overload
+def search(seq: Sequence[T], value: S, key: Callable[[T], S]) -> int:
+    ...
+
+
+def search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
+    """Returns the first index of ``value`` in the sequence in O(n) time.
+
+    If no
+    instances of ``value`` are found ``-1`` is returned. Callable ``key`` can be
+    optionally provided to map elements of sequence. If ``key`` is provided the
+    sequence **must be ordered by the results of applying key to them** (``key(e)``).
+    There is no assumption about the order of the elements in the sequence.
+
+    Args:
+        seq (Sequence[T]): Sequence to be searched.
+        value (S): Value of which the index is to be found.
+        key (Callable, optional): If provided, the search is performed for the element
+            of which ``key(e) == value``.
+
+    Returns:
+        int: Index of the first occurrence of the ``value`` or ``-1`` if no instances
+            are found.
+    """
+    for i, e in enumerate(seq):
+        if key(e) == value:
+            return i
 
     return -1
