@@ -56,6 +56,7 @@ Algorithms
 
 - [x] Search Algorithms
     - [x] Binary search
+    - [x] Linear search
 - [ ] Sorting Algorithms
     - [ ] Bubble sort
     - [ ] Merge sort 

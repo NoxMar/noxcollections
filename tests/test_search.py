@@ -7,8 +7,6 @@ import pytest
 
 from noxcollections.search import binary_search, search
 
-not_implemented_annotation = pytest.mark.xfail(reason="Not implemented yet.")
-
 
 @pytest.fixture(params=[binary_search])
 def search_ordered(request) -> Callable:
@@ -20,7 +18,7 @@ def search_no_assumptions(request) -> Callable:
     return request.param
 
 
-@pytest.fixture(params=[binary_search])
+@pytest.fixture(params=[search, binary_search])
 def search_any(request) -> Callable:
     return request.param
 
@@ -113,7 +111,6 @@ def _shuffled_lists_with_elements_0_to_9():
     ]
 
 
-@not_implemented_annotation
 @pytest.mark.parametrize("seq", _shuffled_lists_with_elements_0_to_9())
 @pytest.mark.parametrize("value", range(10))
 def test_search_should_return_index_of_searched(
@@ -122,7 +119,6 @@ def test_search_should_return_index_of_searched(
     assert search_no_assumptions(seq, value) == seq.index(value)
 
 
-@not_implemented_annotation
 @pytest.mark.parametrize("seq", _shuffled_lists_with_elements_0_to_9())
 @pytest.mark.parametrize("value", range(10))
 def test_search_should_return_index_of_searched_element_when_using_key(
@@ -131,7 +127,6 @@ def test_search_should_return_index_of_searched_element_when_using_key(
     assert search_no_assumptions(seq, value + 10, lambda x: x + 10) == seq.index(value)
 
 
-@not_implemented_annotation
 @pytest.mark.parametrize("seq", _shuffled_lists_with_elements_0_to_9())
 @pytest.mark.parametrize("value", [100, -100])
 def test_search_should_return_minus_1_for_items_not_in_the_sequence(
@@ -140,7 +135,6 @@ def test_search_should_return_minus_1_for_items_not_in_the_sequence(
     assert search_no_assumptions(seq, value + 10) == -1
 
 
-@not_implemented_annotation
 @pytest.mark.parametrize("seq", _shuffled_lists_with_elements_0_to_9())
 @pytest.mark.parametrize("value", range(10))
 def test_search_should_return_minus_1_for_items_not_in_the_sequence_using_key(

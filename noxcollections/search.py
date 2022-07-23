@@ -71,7 +71,7 @@ def search(seq: Sequence[T], value: S, key: Callable[[T], S]) -> int:
 
 
 def search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
-    """Returns the first index of ``value`` in the sequence in O(n).
+    """Returns the first index of ``value`` in the sequence in O(n) time.
 
     If no
     instances of ``value`` are found ``-1`` is returned. Callable ``key`` can be
@@ -89,4 +89,8 @@ def search(seq: Sequence[T], value: S, key: Callable = identity) -> int:
         int: Index of the first occurrence of the ``value`` or ``-1`` if no instances
             are found.
     """
-    raise NotImplementedError()
+    for i, e in enumerate(seq):
+        if key(e) == value:
+            return i
+
+    return -1
