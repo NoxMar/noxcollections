@@ -7,8 +7,6 @@ from noxcollections.sort import bubble_sort
 from typing import Callable, Sequence, TypeVar, Generator
 
 
-pytestmark = pytest.mark.xfail(reason="Not implemented yet")
-
 T = TypeVar("T")
 
 
