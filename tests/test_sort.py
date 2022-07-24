@@ -35,11 +35,14 @@ def sort_any(request) -> Callable:
         [9, 2, 15, 13, 7, 11, 10, 20, 6, 5],
     ],
 )
-def test_sort_consistent_with_list_sort_method(sort_any, to_sort: Sequence[int]):
+@pytest.mark.parametrize("reverse", [True, False])
+def test_sort_consistent_with_list_sort_method(
+    sort_any, to_sort: Sequence[int], reverse: bool
+):
     sorted_by_tested = to_sort[:]
-    sort_any(sorted_by_tested)
+    sort_any(sorted_by_tested, reverse=reverse)
 
-    assert sorted_by_tested == sorted(to_sort)
+    assert sorted_by_tested == sorted(to_sort, reverse=reverse)
 
 
 class _IntWithId:
@@ -86,8 +89,9 @@ def lists_ints_with_ids() -> Generator[Sequence[_IntWithId], None, None]:
 
 
 @pytest.mark.parametrize("to_sort", lists_ints_with_ids())
-def test_sort_is_stable(sort_stable, to_sort: Sequence[_IntWithId]):
+@pytest.mark.parametrize("reverse", [True, False])
+def test_sort_is_stable(sort_stable, to_sort: Sequence[_IntWithId], reverse: bool):
     sorted_by_tested = to_sort[:]
-    sort_stable(sorted_by_tested)
+    sort_stable(sorted_by_tested, reverse=reverse)
 
-    assert sorted_by_tested == sorted(to_sort)
+    assert sorted_by_tested == sorted(to_sort, reverse=reverse)
