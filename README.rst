@@ -58,7 +58,7 @@ Algorithms
     - [x] Binary search
     - [x] Linear search
 - [ ] Sorting Algorithms
-    - [ ] Bubble sort
+    - [x] Bubble sort
     - [ ] Merge sort 
     - [ ] Quick sort
 - [ ] Graph algorithms (TBD)
