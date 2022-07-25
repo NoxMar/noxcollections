@@ -2,7 +2,7 @@
 
 import pytest
 
-from noxcollections.sort import bubble_sort
+from noxcollections.sort import bubble_sort, merge_sort
 
 from typing import Callable, Sequence, TypeVar, Generator
 
@@ -10,12 +10,12 @@ from typing import Callable, Sequence, TypeVar, Generator
 T = TypeVar("T")
 
 
-@pytest.fixture(params=[bubble_sort])
+@pytest.fixture(params=[bubble_sort, merge_sort])
 def sort_stable(request) -> Callable:
     return request.param
 
 
-@pytest.fixture(params=[bubble_sort])
+@pytest.fixture(params=[bubble_sort, merge_sort])
 def sort_any(request) -> Callable:
     return request.param
 
@@ -23,7 +23,6 @@ def sort_any(request) -> Callable:
 @pytest.mark.parametrize(
     "to_sort",
     [
-        [2],
         [2],
         [1, 3],
         [2, 3],
