@@ -4,7 +4,7 @@ import pytest
 
 from noxcollections.sort import bubble_sort, merge_sort
 
-from typing import Callable, Sequence, TypeVar, Generator
+from typing import Callable, Sequence, TypeVar, Generator, MutableSequence
 
 
 T = TypeVar("T")
@@ -70,6 +70,14 @@ def test_sort_consistent_with_list_sort_method(
     sort_any(sorted_by_tested, reverse=reverse)
 
     assert sorted_by_tested == sorted(to_sort, reverse=reverse)
+
+
+@pytest.mark.parametrize("reverse", [True, False])
+def test_sort_should_handle_empty_sequence(sort_any, reverse: bool):
+    to_sort: MutableSequence[int] = []
+    sort_any(to_sort, reverse=reverse)
+
+    assert to_sort == []
 
 
 class _IntWithId:

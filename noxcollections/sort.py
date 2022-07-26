@@ -73,7 +73,7 @@ def _merge(
 def _merge_sorted(
     seq: MutableSequence[T], should_swap_func: Callable[[T, T], bool]
 ) -> MutableSequence[T]:
-    if len(seq) == 1:
+    if len(seq) <= 1:
         return seq
 
     if len(seq) == 2:
