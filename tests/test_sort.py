@@ -2,20 +2,20 @@
 
 import pytest
 
-from noxcollections.sort import bubble_sort
+from noxcollections.sort import bubble_sort, merge_sort
 
-from typing import Callable, Sequence, TypeVar, Generator
+from typing import Callable, Sequence, TypeVar, Generator, MutableSequence
 
 
 T = TypeVar("T")
 
 
-@pytest.fixture(params=[bubble_sort])
+@pytest.fixture(params=[bubble_sort, merge_sort])
 def sort_stable(request) -> Callable:
     return request.param
 
 
-@pytest.fixture(params=[bubble_sort])
+@pytest.fixture(params=[bubble_sort, merge_sort])
 def sort_any(request) -> Callable:
     return request.param
 
@@ -23,7 +23,6 @@ def sort_any(request) -> Callable:
 @pytest.mark.parametrize(
     "to_sort",
     [
-        [2],
         [2],
         [1, 3],
         [2, 3],
@@ -71,6 +70,14 @@ def test_sort_consistent_with_list_sort_method(
     sort_any(sorted_by_tested, reverse=reverse)
 
     assert sorted_by_tested == sorted(to_sort, reverse=reverse)
+
+
+@pytest.mark.parametrize("reverse", [True, False])
+def test_sort_should_handle_empty_sequence(sort_any, reverse: bool):
+    to_sort: MutableSequence[int] = []
+    sort_any(to_sort, reverse=reverse)
+
+    assert to_sort == []
 
 
 class _IntWithId:
