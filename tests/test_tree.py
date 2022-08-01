@@ -286,3 +286,25 @@ def test_binary_tree_bfs_contains_should_return_false_if_value_is_not_in_tree(
     tree: BinaryTreeNode[int], to_find: object
 ):
     assert to_find not in tree
+
+
+@pytest.mark.parametrize(
+    ("tree", "order"),
+    [
+        (_balanced_tree(), [0, 1, 3, 4, 2, 5, 6]),
+        (_linked_list_tree(), [0, 1, 2, 3, 4, 5, 6]),
+    ],
+)
+def test_binary_tree_traverse_returns_dfs_preorder_values_in_a_correct_order(
+    tree: BinaryTreeNode[int], order: Sequence[int]
+):
+    assert list(n.value for n in tree.traverse_dfs_preorder()) == order
+
+
+@pytest.mark.parametrize("tree", [_balanced_tree(), _linked_list_tree()])
+def test_binary_tree_values_dfs_preorder_should_be_consistent_with_traverse(
+    tree: BinaryTreeNode[int],
+):
+    assert list(n.value for n in tree.traverse_dfs_preorder()) == list(
+        tree.values_dfs_preorder()
+    )

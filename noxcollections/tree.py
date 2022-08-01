@@ -86,7 +86,7 @@ class BinaryTreeNodeABC(Generic[T], ABC):
     def values_bfs(self) -> Generator[T, None, None]:
         """Yields values from a tree in BFS order threating this node as a root.
 
-        Values from one level are yielded from the leftmost left to the rightmost.
+        Values from one level are yielded from the leftmost to the rightmost.
         This function runs in ``O(n)`` time and needs up to ``O(n)`` aux space.
 
         Yields:
@@ -94,6 +94,43 @@ class BinaryTreeNodeABC(Generic[T], ABC):
               bottom and on each level left to right.
         """
         return (n.value for n in self.traverse_bfs())
+
+    def traverse_dfs_preorder(self) -> "Generator[BinaryTreeNodeABC[T], None, None]":
+        """Traverses using DFS preorder rules yielding each node as it is encountered.
+
+        Left children are explored until a leaf in encountered then moving on to the
+        next seen but not traversed node to the right. This functions runs in
+        ``O(n)`` time using up to aux ``O(n)`` space.
+
+        You might modify yielded nodes but continuing to consume nodes
+        **after changing anything but value may lead to unexpected results**.
+
+
+        Yields:
+            Generator[BinaryTreeNodeABC[T], None, None]: Nodes as encountered in DFS
+              preorder traversal (exploring left children first).
+        """
+        to_visit = deque()
+        to_visit.append(self)
+
+        while to_visit:
+            node = to_visit.pop()
+            yield node
+            to_visit.extend(n for n in node.children[::-1] if n is not None)
+
+    def values_dfs_preorder(self) -> Generator[T, None, None]:
+        """Yields values from a tree in DFS preorder threating this node as a root.
+
+        Left children are explored until a leaf in encountered then moving on to the
+        next seen but not traversed node to the right. This functions runs in
+        ``O(n)`` time using up to aux ``O(n)`` space.
+
+
+        Yields:
+            Generator[T, None, None]: Values from tree as encountered per DFS preorder
+              going left first.
+        """
+        return (n.value for n in self.traverse_dfs_preorder())
 
     def get_level(self) -> int:
         """Return the level of this node, treating root as having a level of 0.
@@ -168,3 +205,13 @@ class BinaryTreeNode(BinaryTreeNodeABC[T]):
     @property
     def parent(self) -> "Optional[BinaryTreeNode[T]]":
         return self._parent
+
+
+if __name__ == "__main__":
+    tree = BinaryTreeNode(
+        0,
+        BinaryTreeNode(1, BinaryTreeNode(3), BinaryTreeNode(4)),
+        BinaryTreeNode(2, BinaryTreeNode(5), BinaryTreeNode(6)),
+    )
+
+    print(*(n.value for n in tree.traverse_dfs_preorder()))
