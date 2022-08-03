@@ -5,9 +5,20 @@ the next (non-dev) release."""
 from abc import ABC, abstractmethod
 from collections import deque
 
-from typing import Generic, TypeVar, Optional, Generator, Tuple, Deque, Any
+from typing import (
+    Generic,
+    TypeVar,
+    Optional,
+    Generator,
+    Tuple,
+    Deque,
+    Any,
+)
 
 T = TypeVar("T")
+
+
+S = TypeVar("S", bound="BinaryTreeNodeABC")
 
 
 class BinaryTreeNodeABC(Generic[T], ABC):
@@ -28,13 +39,31 @@ class BinaryTreeNodeABC(Generic[T], ABC):
     @property
     @abstractmethod
     def left(self) -> "Optional[BinaryTreeNodeABC[T]]":
-        """Left child of the node is any or ``None`` if node has no left child."""
+        """Left child of the node, if any. See note about permissible values to set.
+
+        Note: Setting should be constrained to nodes of the same tree, leafs, or roots
+        of a tree that don't have any parents (aren't roots of a subtree in a different
+        tree). Handling the same nodes in different trees (not subtrees) is not
+        defined."""
+        pass
+
+    @left.setter
+    def left(self, new_val: "Optional[BinaryTreeNodeABC[T]]") -> None:
         pass
 
     @property
     @abstractmethod
     def right(self) -> "Optional[BinaryTreeNodeABC[T]]":
-        """Right child of the node is any or ``None`` if node has no right child."""
+        """Right child of the node, if any. See note about permissible values to set.
+
+        Note: Setting should be constrained to nodes of the same tree, leafs, or roots
+        of a tree that don't have any parents (aren't roots of a subtree in a different
+        tree). Handling the same nodes in different trees (not subtrees) is not
+        defined."""
+        pass
+
+    @right.setter
+    def right(self, new_val: "Optional[BinaryTreeNodeABC[T]]") -> None:
         pass
 
     @property
@@ -62,7 +91,9 @@ class BinaryTreeNodeABC(Generic[T], ABC):
         """
         return (self.left, self.right)
 
-    def traverse_bfs(self) -> "Generator[BinaryTreeNodeABC[T], None, None]":
+    def traverse_bfs(
+        self,
+    ) -> "Generator[BinaryTreeNodeABC[T], None, None]":
         """Traverses using BFS rules yielding each node as it is encountered.
 
         Additionally, left node is yielded before the right node. This functions runs in
@@ -110,7 +141,7 @@ class BinaryTreeNodeABC(Generic[T], ABC):
             Generator[BinaryTreeNodeABC[T], None, None]: Nodes as encountered in DFS
               preorder traversal (exploring left children first).
         """
-        to_visit = deque()
+        to_visit: Deque[BinaryTreeNodeABC[T]] = deque()
         to_visit.append(self)
 
         while to_visit:
@@ -205,13 +236,3 @@ class BinaryTreeNode(BinaryTreeNodeABC[T]):
     @property
     def parent(self) -> "Optional[BinaryTreeNode[T]]":
         return self._parent
-
-
-if __name__ == "__main__":
-    tree = BinaryTreeNode(
-        0,
-        BinaryTreeNode(1, BinaryTreeNode(3), BinaryTreeNode(4)),
-        BinaryTreeNode(2, BinaryTreeNode(5), BinaryTreeNode(6)),
-    )
-
-    print(*(n.value for n in tree.traverse_dfs_preorder()))
