@@ -1,7 +1,9 @@
 {
     "cSpell.words": [
+        "extendleft",
         "mypy",
         "noxcollections",
+        "preorder",
         "pytest"
     ],
     "python.linting.enabled": true,
