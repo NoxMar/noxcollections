@@ -13,6 +13,9 @@ from typing import (
     Tuple,
     Deque,
     Any,
+    Iterator,
+    AbstractSet,
+    Iterable,
 )
 
 T = TypeVar("T")
@@ -236,3 +239,178 @@ class BinaryTreeNode(BinaryTreeNodeABC[T]):
     @property
     def parent(self) -> "Optional[BinaryTreeNode[T]]":
         return self._parent
+
+
+class BinaryTreeABC(AbstractSet[T], ABC):
+    """ABC representing a higher level view of a binary tree as a set.
+
+    This view exposes higher level operations like insertion, membership testing, and
+    deletion without exposing nodes for direct manipulation. Additionally, empty
+    instances are considered truthy and instances containing at least one node - falsy.
+
+    Concrete implementations of this ABC may include additional ways in which those
+    operations are conducted to achieve some type of order or improve complexity of
+    those operations (e.g. BST and its variants).
+    """
+
+    def __init__(self, values: Optional[Iterable[T]] = None):
+        if values is None:
+            return
+        for v in values:
+            self.add(v)
+
+    @property
+    @abstractmethod
+    def root(self) -> Optional[BinaryTreeNodeABC]:
+        """Root of this tree. This object **should not be modified in any way**.
+
+        This property is meant to be used for traversal and any other non-mutating
+        operations.
+        """
+
+    @abstractmethod
+    def add(self, value: T) -> None:
+        """Inserts ``value`` into this instance of a tree.
+
+        After this operation ``value in tree`` will return True.
+
+        Args:
+            value (T): Value to be inserted.
+        """
+
+    @abstractmethod
+    def discard(self, value: T) -> None:
+        """Removes ``value`` if it is present, otherwise throws ``KeyError``.
+
+        Args:
+            value (T): Value to be removed from the tree.
+
+        Throws:
+            KeyError: If ``value`` was not present in this tree.
+        """
+
+    @abstractmethod
+    def __contains__(self, value: Any) -> bool:
+        """Returns ``True`` if node representing ``value`` exits in this tree.
+
+        Returns:
+            bool: Boolean value indicating if a node representing ``value`` exists in
+              this tree.
+        """
+
+    def __repr__(self):
+        keys_str = (
+            ", ".join(repr(v) for v in self.root.values_bfs())
+            if self.root is not None
+            else ""
+        )
+        return f"{self.__class__.__name__}({keys_str})"
+
+    def __iter__(self) -> Iterator[T]:
+        if self.root is None:
+            yield from ()
+            return
+        yield from self.root.values_bfs()
+
+    def __len__(self) -> int:
+        # TODO: cache length since now it takes O(n) time to count the number of nodes.
+        return sum(1 for _ in self)
+
+
+class BinaryReferenceTree(BinaryTreeABC[T]):
+    """Set implementation based on binary tree where nodes storing references to each other.
+
+    This is meant for reference (as in reference implementation in terms of behavior) of
+    a binary tree-based set. For practical purposes, BST or its self-balancing variants
+    are probably a better fit.
+
+    Note that because there are no rules placed on the tree, all operations have the
+    same complexity as if they were done on a list and worse aux space complexity.
+    """
+
+    def __init__(self, values: Optional[Iterable[T]] = None):
+        self._root: Optional[BinaryTreeNode[T]] = None
+        super().__init__(values)
+
+    @property
+    def root(self) -> Optional[BinaryTreeNodeABC]:
+        return self._root
+
+    def add(self, value: T) -> None:
+        """Inserts ``value`` into this instance of a tree in O(n) time.
+
+        After this operation ``value in tree`` will return ``True``. This method does
+        **not provide any guarantees where the new value will be inserted**.
+
+        Args:
+            value (T): Value to be inserted.
+        """
+        if self._root is None:
+            self._root = BinaryTreeNode(value)
+            return
+
+        to_append_to = next(
+            n for n in self._root.traverse_bfs() if n.left is None or n.right is None
+        )
+        if to_append_to.left is None:
+            to_append_to.left = BinaryTreeNode(value)
+        else:
+            to_append_to.right = BinaryTreeNode(value)
+
+    def _delete_leaf(self, leaf: BinaryTreeNodeABC[T]) -> None:
+        if leaf.parent is None:
+            self._root = None
+            return
+
+        if leaf.parent.left is leaf:
+            leaf.parent.left = None
+        else:
+            leaf.parent.right = None
+
+    def _delete_non_leaf(
+        self,
+        node: BinaryTreeNodeABC[T],
+        remaining_nodes_bfs: Iterator[BinaryTreeNodeABC[T]],
+    ) -> None:
+        # Placing the last node in the level order in place of the removed node to try
+        # to keep the tree balanced.
+        bottom_rightmost_leaf = None
+        for bottom_rightmost_leaf in remaining_nodes_bfs:
+            pass
+        if bottom_rightmost_leaf is None:
+            raise ValueError("Leaf passed to _delete_not_leaf")
+        node.value = bottom_rightmost_leaf.value
+        self._delete_leaf(bottom_rightmost_leaf)
+
+    def discard(self, value: T) -> None:
+        """Removes one instance of ``value`` in O(n) time throwing ``KeyError`` if not present.
+
+        Only guarantee provided after this operation is that tree will still be a
+        proper binary tree. If there were multiple node containing ``value``
+        **only one of them will be removed**.
+
+        Args:
+            value (T): Value to be removed from the tree.
+
+        Throws:
+            KeyError: If ``value`` was not present in this tree.
+        """
+        if self._root is None:
+            raise KeyError("Cannot remove elements from an empty tree")
+
+        nodes = iter(self._root.traverse_bfs())
+        try:
+            node_value = next(n for n in nodes if n.value == value)
+        except StopIteration:
+            raise KeyError(f"Key {value} not found")
+
+        if node_value.is_leaf:
+            self._delete_leaf(node_value)
+            return
+
+        self._delete_non_leaf(node_value, nodes)
+
+    def __contains__(self, value: Any) -> bool:
+        if self.root is None:
+            return False
+        return value in self.root.values_bfs()

@@ -1,9 +1,9 @@
 """Tests for module ``noxcollections.tree``"""
 
-from typing import Sequence, no_type_check
+from typing import Sequence, no_type_check, Iterable, Any, Generator
 import pytest
 
-from noxcollections.tree import BinaryTreeNode
+from noxcollections.tree import BinaryTreeNode, BinaryReferenceTree
 
 
 def _balanced_tree() -> BinaryTreeNode[int]:
@@ -308,3 +308,108 @@ def test_binary_tree_values_dfs_preorder_should_be_consistent_with_traverse(
     assert list(n.value for n in tree.traverse_dfs_preorder()) == list(
         tree.values_dfs_preorder()
     )
+
+
+def test_binary_reference_tree_empty_instances_are_falsy():
+    tree = BinaryReferenceTree()
+
+    assert not tree
+
+
+def test_binary_reference_tree_contains_item_after_add():
+    tree = BinaryReferenceTree()
+    tree.add("abc")
+
+    assert "abc" in tree
+
+
+def test_binary_reference_tree_does_not_contain_not_added_item():
+    tree = BinaryReferenceTree()
+    tree.add("abc")
+
+    assert "def" not in tree
+
+
+def values_for_tree() -> Generator[Sequence[Any], None, None]:
+    yield range(3)
+    yield ["a"],
+    yield (-999, 999, -10, 123)
+
+
+@pytest.mark.parametrize("values", values_for_tree())
+def test_binary_reference_tree_constructor_with_iterable_adds_passed_iterable(
+    values: Sequence,
+):
+    tree = BinaryReferenceTree(values)
+
+    for item in values:
+        assert item in tree
+
+
+parametrize_discard_tests = pytest.mark.parametrize(
+    ("values", "to_discard"),
+    [
+        ([0], 0),
+        ([10, 1, 999], 10),
+        ([10, 1, 999], 1),
+        ([10, 1, 999], 999),
+        (range(10), 7),
+    ],
+)
+
+
+@parametrize_discard_tests
+def test_binary_reference_tree_discard_removes_item_from_tree(
+    values: Iterable[int], to_discard: int
+):
+    tree = BinaryReferenceTree(values)
+    tree.discard(to_discard)
+
+    assert to_discard not in tree
+
+
+@pytest.mark.parametrize(
+    ("values", "to_discard"),
+    [
+        ([0], 10),
+        ([0], "a"),
+        ([10, 1, 999], -10),
+        ([10, 1, 999], 1.1),
+        ([10, 1, 999], [1, 2, 3]),
+        (range(10), 10),
+    ],
+)
+def test_binary_reference_tree_discard_element_not_in_tree_throws(
+    values: Iterable[int], to_discard: Any
+):
+    tree = BinaryReferenceTree(values)
+
+    with pytest.raises(KeyError):
+        tree.discard(to_discard)
+
+
+@pytest.mark.parametrize("values", values_for_tree())
+def test_binary_reference_tree_len_consistent_with_iterable_passed_to_constructor(
+    values: Sequence,
+):
+    tree = BinaryReferenceTree(values)
+
+    assert len(tree) == len(values)
+
+
+@pytest.mark.parametrize("values", values_for_tree())
+def test_binary_reference_tree_length_increases_after_add(values: Sequence):
+    tree = BinaryReferenceTree(values)
+    tree.add("TO_ADD")
+
+    assert len(tree) == len(values) + 1
+
+
+@parametrize_discard_tests
+def test_binary_reference_tree_length_decreases_after_discard(
+    values: Sequence[int], to_discard: int
+):
+    tree = BinaryReferenceTree(values)
+    tree.discard(to_discard)
+
+    assert len(tree) == len(values) - 1
