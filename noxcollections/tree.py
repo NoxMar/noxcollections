@@ -16,6 +16,7 @@ from typing import (
     Iterator,
     AbstractSet,
     Iterable,
+    Protocol,
 )
 
 T = TypeVar("T")
@@ -317,6 +318,17 @@ class BinaryTreeABC(AbstractSet[T], ABC):
         return sum(1 for _ in self)
 
 
+CT = TypeVar("CT", bound="Comparable")
+
+
+class Comparable(Protocol):
+    """Protocol for annotating comparable types."""
+
+    @abstractmethod
+    def __lt__(self: CT, other: CT) -> bool:
+        pass
+
+
 class BinaryReferenceTree(BinaryTreeABC[T]):
     """Set implementation based on binary tree where nodes storing references to each other.
 
@@ -414,3 +426,87 @@ class BinaryReferenceTree(BinaryTreeABC[T]):
         if self.root is None:
             return False
         return value in self.root.values_bfs()
+
+
+class BstReferenceTree(BinaryTreeABC[CT]):
+    """Set implementation based on a reference-based BST.
+
+    Values in the tree have to be comparable among themselves (support at least ``<``
+    and ``==`` operators).
+
+    This is a normal BST without any self balancing strategies. So operations run in
+    average O(log_2(n)) time however the worst case time complexity is O(n) (for
+    operations on a tree that is essentially a linked list)"""
+
+    def __init__(self, values: Optional[Iterable[CT]] = None):
+        self._root: Optional[BinaryTreeNode[CT]] = None
+        super().__init__(values)
+
+    @property
+    def root(self) -> Optional[BinaryTreeNodeABC]:
+        return self._root
+
+    def add(self, value: CT) -> None:
+        """Inserts ``value`` into a tree in O(log2(n)) avg, O(n) worst case time.
+
+        After this operation ``value in tree`` will return ``True``.
+
+        Args:
+            value (CT): Value to be inserted.
+        """
+        if self._root is None:
+            self._root = BinaryTreeNode(value)
+            return
+
+        node: BinaryTreeNode[CT] = self._root
+        parent = None
+
+        while node is not None:
+            parent = node
+            # Mypy doesn't understand that this while loop's condition checks that
+            # `node` is not `None`.
+            node = node.left if value < node.value else node.right  # type: ignore
+
+        if parent.value < value:
+            parent.right = BinaryTreeNode(value)
+        else:
+            parent.left = BinaryTreeNode(value)
+
+    def _delete_leaf(self, leaf: BinaryTreeNodeABC[CT]) -> None:
+        if leaf.parent is None:
+            self._root = None
+            return
+
+        if leaf.parent.left is leaf:
+            leaf.parent.left = None
+        else:
+            leaf.parent.right = None
+
+    def _delete_non_leaf(
+        self,
+        node: BinaryTreeNodeABC[CT],
+        remaining_nodes_bfs: Iterator[BinaryTreeNodeABC[CT]],
+    ) -> None:
+        raise NotImplementedError()
+
+    def discard(self, value: CT) -> None:
+        """Removes one instance of ``value`` in O(log_2(n)) avg O(n) worst case time.
+
+        If there is no instance of ``value`` is this tree ``KeyError`` is raised.
+
+        Args:
+            value (CT): Value to be removed from the tree.
+
+        Throws:
+            KeyError: If ``value`` was not present in this tree.
+        """
+        raise NotImplementedError()
+
+    def __contains__(self, value: Any) -> bool:
+        node = self._root
+
+        while node is not None:
+            if node.value == value:
+                return True
+            node = node.left if value < node.value else node.right
+        return False
