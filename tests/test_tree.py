@@ -1,9 +1,9 @@
 """Tests for module ``noxcollections.tree``"""
 
-from typing import Sequence, no_type_check, Iterable, Any, Generator
+from typing import Sequence, no_type_check, Iterable, Any, Generator, Callable, Optional
 import pytest
 
-from noxcollections.tree import BinaryTreeNode, BinaryReferenceTree
+from noxcollections.tree import BinaryTreeNode, BinaryTreeABC, BinaryReferenceTree
 
 
 def _balanced_tree() -> BinaryTreeNode[int]:
@@ -310,21 +310,35 @@ def test_binary_tree_values_dfs_preorder_should_be_consistent_with_traverse(
     )
 
 
-def test_binary_reference_tree_empty_instances_are_falsy():
-    tree = BinaryReferenceTree()
+BinaryTreeConstructor = Callable[[Optional[Iterable]], BinaryTreeABC]
+
+
+@pytest.fixture(params=[BinaryReferenceTree])
+def binary_tree(request) -> BinaryTreeConstructor:
+    return request.param
+
+
+def test_binary_reference_tree_empty_instances_are_falsy(
+    binary_tree: BinaryTreeConstructor,
+):
+    tree = binary_tree(None)
 
     assert not tree
 
 
-def test_binary_reference_tree_contains_item_after_add():
-    tree = BinaryReferenceTree()
+def test_binary_reference_tree_contains_item_after_add(
+    binary_tree: BinaryTreeConstructor,
+):
+    tree = binary_tree(None)
     tree.add("abc")
 
     assert "abc" in tree
 
 
-def test_binary_reference_tree_does_not_contain_not_added_item():
-    tree = BinaryReferenceTree()
+def test_binary_reference_tree_does_not_contain_not_added_item(
+    binary_tree: BinaryTreeConstructor,
+):
+    tree = binary_tree(None)
     tree.add("abc")
 
     assert "def" not in tree
@@ -338,9 +352,9 @@ def values_for_tree() -> Generator[Sequence[Any], None, None]:
 
 @pytest.mark.parametrize("values", values_for_tree())
 def test_binary_reference_tree_constructor_with_iterable_adds_passed_iterable(
-    values: Sequence,
+    binary_tree: BinaryTreeConstructor, values: Sequence
 ):
-    tree = BinaryReferenceTree(values)
+    tree = binary_tree(values)
 
     for item in values:
         assert item in tree
@@ -360,9 +374,9 @@ parametrize_discard_tests = pytest.mark.parametrize(
 
 @parametrize_discard_tests
 def test_binary_reference_tree_discard_removes_item_from_tree(
-    values: Iterable[int], to_discard: int
+    binary_tree: BinaryTreeConstructor, values: Iterable[int], to_discard: int
 ):
-    tree = BinaryReferenceTree(values)
+    tree = binary_tree(values)
     tree.discard(to_discard)
 
     assert to_discard not in tree
@@ -380,9 +394,9 @@ def test_binary_reference_tree_discard_removes_item_from_tree(
     ],
 )
 def test_binary_reference_tree_discard_element_not_in_tree_throws(
-    values: Iterable[int], to_discard: Any
+    binary_tree: BinaryTreeConstructor, values: Iterable[int], to_discard: Any
 ):
-    tree = BinaryReferenceTree(values)
+    tree = binary_tree(values)
 
     with pytest.raises(KeyError):
         tree.discard(to_discard)
@@ -390,16 +404,18 @@ def test_binary_reference_tree_discard_element_not_in_tree_throws(
 
 @pytest.mark.parametrize("values", values_for_tree())
 def test_binary_reference_tree_len_consistent_with_iterable_passed_to_constructor(
-    values: Sequence,
+    binary_tree: BinaryTreeConstructor, values: Sequence
 ):
-    tree = BinaryReferenceTree(values)
+    tree = binary_tree(values)
 
     assert len(tree) == len(values)
 
 
 @pytest.mark.parametrize("values", values_for_tree())
-def test_binary_reference_tree_length_increases_after_add(values: Sequence):
-    tree = BinaryReferenceTree(values)
+def test_binary_reference_tree_length_increases_after_add(
+    binary_tree: BinaryTreeConstructor, values: Sequence
+):
+    tree = binary_tree(values)
     tree.add("TO_ADD")
 
     assert len(tree) == len(values) + 1
@@ -407,9 +423,9 @@ def test_binary_reference_tree_length_increases_after_add(values: Sequence):
 
 @parametrize_discard_tests
 def test_binary_reference_tree_length_decreases_after_discard(
-    values: Sequence[int], to_discard: int
+    binary_tree: BinaryTreeConstructor, values: Sequence[int], to_discard: int
 ):
-    tree = BinaryReferenceTree(values)
+    tree = binary_tree(values)
     tree.discard(to_discard)
 
     assert len(tree) == len(values) - 1
