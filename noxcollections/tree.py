@@ -446,6 +446,33 @@ class BstReferenceTree(BinaryTreeABC[CT]):
     def root(self) -> Optional[BinaryTreeNodeABC]:
         return self._root
 
+    def _find_node_and_parent(
+        self, value: CT
+    ) -> Tuple[Optional[BinaryTreeNodeABC[CT]], Optional[BinaryTreeNodeABC[CT]]]:
+        """Finds a node holding `value` and its parent if such a node exists.
+
+        If node with this value does not exist then `None` is returned in its place.
+        In this case the second returned node will be the node that would be a parent
+        of node with `value` if such a node existed.
+
+        Args:
+            value (CT): `value` to be found
+
+        Returns:
+            Tuple[Optional[BinaryTreeNodeABC[CT]], Optional[BinaryTreeNodeABC[CT]]]:
+              A tuple of node containing `value` if found and a (if not found potential)
+              parent of this node.
+        """
+        parent = None
+        node = self._root
+
+        # `not node.value == value` since only `<` and `==` are ensured by the contract.
+        while node is not None and not node.value == value:
+            parent = node
+            node = node.left if value < node.value else node.right
+
+        return node, parent
+
     def add(self, value: CT) -> None:
         """Inserts ``value`` into a tree in O(log2(n)) avg, O(n) worst case time.
 
@@ -454,23 +481,16 @@ class BstReferenceTree(BinaryTreeABC[CT]):
         Args:
             value (CT): Value to be inserted.
         """
-        if self._root is None:
-            self._root = BinaryTreeNode(value)
+        node_to_add = BinaryTreeNode(value)
+        _, parent = self._find_node_and_parent(value)
+        if parent is None:
+            self._root = node_to_add
             return
 
-        node: BinaryTreeNode[CT] = self._root
-        parent = None
-
-        while node is not None:
-            parent = node
-            # Mypy doesn't understand that this while loop's condition checks that
-            # `node` is not `None`.
-            node = node.left if value < node.value else node.right  # type: ignore
-
-        if parent.value < value:
-            parent.right = BinaryTreeNode(value)
+        if value < parent.value:
+            parent.left = node_to_add
         else:
-            parent.left = BinaryTreeNode(value)
+            parent.right = node_to_add
 
     def _delete_leaf(self, leaf: BinaryTreeNodeABC[CT]) -> None:
         if leaf.parent is None:
@@ -503,10 +523,4 @@ class BstReferenceTree(BinaryTreeABC[CT]):
         raise NotImplementedError()
 
     def __contains__(self, value: Any) -> bool:
-        node = self._root
-
-        while node is not None:
-            if node.value == value:
-                return True
-            node = node.left if value < node.value else node.right
-        return False
+        return self._find_node_and_parent(value)[0] is not None
