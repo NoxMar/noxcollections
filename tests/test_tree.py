@@ -377,7 +377,7 @@ parametrize_discard_tests = pytest.mark.parametrize(
 )
 
 
-@pytest.mark.xfail(reason="Not implemented yet for BST")
+# @pytest.mark.xfail(reason="Not implemented yet for BST")
 @parametrize_discard_tests
 def test_binary_reference_tree_discard_removes_item_from_tree(
     binary_tree: BinaryTreeConstructor, values: Iterable[int], to_discard: int
@@ -388,7 +388,7 @@ def test_binary_reference_tree_discard_removes_item_from_tree(
     assert to_discard not in tree
 
 
-@pytest.mark.xfail(reason="Not implemented yet for BST")
+# @pytest.mark.xfail(reason="Not implemented yet for BST")
 @pytest.mark.parametrize(
     ("values", "to_discard"),
     [
@@ -396,7 +396,7 @@ def test_binary_reference_tree_discard_removes_item_from_tree(
         ([0], 123),
         ([10, 1, 999], -10),
         ([10, 1, 999], 1.1),
-        ([10, 1, 999], [1, 2, 3]),
+        ([10, 1, 999], 4),
         (range(10), 10),
     ],
 )
@@ -428,7 +428,7 @@ def test_binary_reference_tree_length_increases_after_add(
     assert len(tree) == len(values) + 1
 
 
-@pytest.mark.xfail(reason="Not implemented yet for BST")
+# @pytest.mark.xfail(reason="Not implemented yet for BST")
 @parametrize_discard_tests
 def test_binary_reference_tree_length_decreases_after_discard(
     binary_tree: BinaryTreeConstructor, values: Sequence[int], to_discard: int

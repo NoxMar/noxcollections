@@ -118,6 +118,22 @@ class BinaryTreeNodeABC(Generic[T], ABC):
             yield node
             to_visit.extendleft(n for n in node.children if n is not None)
 
+    def get_leftmost_descendant(self):
+        node = self
+        left_child = node.left
+        while left_child is not None:
+            node = left_child
+            left_child = node.left
+        return node
+
+    def get_rightmost_descendant(self):
+        node = self
+        right_child = node.right
+        while right_child is not None:
+            node = right_child
+            right_child = node.right
+        return node
+
     def values_bfs(self) -> Generator[T, None, None]:
         """Yields values from a tree in BFS order threating this node as a root.
 
@@ -341,12 +357,39 @@ class BinaryReferenceTree(BinaryTreeABC[T]):
     """
 
     def __init__(self, values: Optional[Iterable[T]] = None):
-        self._root: Optional[BinaryTreeNode[T]] = None
+        self._root: Optional[BinaryTreeNodeABC[T]] = None
         super().__init__(values)
 
     @property
     def root(self) -> Optional[BinaryTreeNodeABC]:
         return self._root
+
+    def _find_node_and_parent(
+        self, value: T
+    ) -> Tuple[Optional[BinaryTreeNodeABC[T]], Optional[BinaryTreeNodeABC[T]]]:
+        """Finds a node holding `value` and its parent if such a node exists.
+
+        If node with this value does not exist then `None` is returned in its place.
+        In this case the second returned node will be the node that would be a parent
+        of node with `value` if such a node existed.
+
+        Args:
+            value (CT): `value` to be found
+
+        Returns:
+            Tuple[Optional[BinaryTreeNodeABC[CT]], Optional[BinaryTreeNodeABC[CT]]]:
+              A tuple of node containing `value` if found and a (if not found potential)
+              parent of this node.
+        """
+        if self._root is None:
+            return None, None
+
+        node = next((n for n in self._root.traverse_bfs() if n.value == value), None)
+        if node is None:
+            return None, None
+
+        parent = node.parent if node.parent is not None else None
+        return node, parent
 
     def add(self, value: T) -> None:
         """Inserts ``value`` into this instance of a tree in O(n) time.
@@ -423,12 +466,10 @@ class BinaryReferenceTree(BinaryTreeABC[T]):
         self._delete_non_leaf(node_value, nodes)
 
     def __contains__(self, value: Any) -> bool:
-        if self.root is None:
-            return False
-        return value in self.root.values_bfs()
+        return self._find_node_and_parent(value)[0] is not None
 
 
-class BstReferenceTree(BinaryTreeABC[CT]):
+class BstReferenceTree(BinaryReferenceTree[CT]):
     """Set implementation based on a reference-based BST.
 
     Values in the tree have to be comparable among themselves (support at least ``<``
@@ -439,12 +480,8 @@ class BstReferenceTree(BinaryTreeABC[CT]):
     operations on a tree that is essentially a linked list)"""
 
     def __init__(self, values: Optional[Iterable[CT]] = None):
-        self._root: Optional[BinaryTreeNode[CT]] = None
+        self._root: Optional[BinaryTreeNodeABC[CT]] = None
         super().__init__(values)
-
-    @property
-    def root(self) -> Optional[BinaryTreeNodeABC]:
-        return self._root
 
     def _find_node_and_parent(
         self, value: CT
@@ -492,22 +529,28 @@ class BstReferenceTree(BinaryTreeABC[CT]):
         else:
             parent.right = node_to_add
 
-    def _delete_leaf(self, leaf: BinaryTreeNodeABC[CT]) -> None:
-        if leaf.parent is None:
-            self._root = None
+    def _delete_with_both_children(self, node: BinaryTreeNodeABC[CT]) -> None:
+        if node.left is None:
+            return
+        replacement_node = node.left.get_rightmost_descendant()
+        # TODO: replace with delete
+        replacement_node.parent.left = replacement_node.right
+        node.value = replacement_node.value
+
+    def _delete_node_with_children(self, node: BinaryTreeNodeABC[CT]) -> None:
+        if node.left is not None and node.right is not None:
+            self._delete_with_both_children(node)
             return
 
-        if leaf.parent.left is leaf:
-            leaf.parent.left = None
-        else:
-            leaf.parent.right = None
+        replacement_node = node.left if node.left is not None else node.right
+        if node.parent is None:
+            self._root = replacement_node
+            return
 
-    def _delete_non_leaf(
-        self,
-        node: BinaryTreeNodeABC[CT],
-        remaining_nodes_bfs: Iterator[BinaryTreeNodeABC[CT]],
-    ) -> None:
-        raise NotImplementedError()
+        if node is node.parent.left:
+            node.parent.left = replacement_node
+        else:
+            node.parent.right = replacement_node
 
     def discard(self, value: CT) -> None:
         """Removes one instance of ``value`` in O(log_2(n)) avg O(n) worst case time.
@@ -520,7 +563,13 @@ class BstReferenceTree(BinaryTreeABC[CT]):
         Throws:
             KeyError: If ``value`` was not present in this tree.
         """
-        raise NotImplementedError()
+        node, _ = self._find_node_and_parent(value)
+        if node is None:
+            # TODO remove string duplication
+            raise KeyError(f"Key {value} not found")
 
-    def __contains__(self, value: Any) -> bool:
-        return self._find_node_and_parent(value)[0] is not None
+        if node.is_leaf:
+            self._delete_leaf(node)
+            return
+
+        self._delete_node_with_children(node)
